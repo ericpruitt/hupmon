@@ -8,6 +8,7 @@
  * - Make: `c99 -O1 -lutil -D_DEFAULT_SOURCE -o $@ $?`
  */
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
@@ -17,7 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <termios.h>
@@ -167,30 +167,6 @@ static int set_hupmon_environment_variables(int ttyfd)
         !(tty = ttyname(ttyfd)) ||
         setenv("HUPMON_TTY", tty, 1)
     );
-}
-
-/**
- * Determine whether two file descriptors point to the same file.
- *
- * Arguments:
- * - fd1: File descriptor of the first file.
- * - fd2: File descriptor of the seconds file.
- *
- * Returns:
- * - -1 : There was an error calling _fstat(2)_ on either descriptor,
- * - 0: The descriptors refer to different files.
- * - 1: The descriptor refer to the same file.
- */
-static int same_file(int fd1, int fd2)
-{
-    struct stat stat1;
-    struct stat stat2;
-
-    if (fstat(fd1, &stat1) || fstat(fd2, &stat2)) {
-        return -1;
-    }
-
-    return (stat1.st_dev == stat2.st_dev) && (stat1.st_ino == stat2.st_ino);
 }
 
 /**
@@ -696,6 +672,8 @@ int main(int argc, char **argv)
     double deadline = 0.200;
     int exit_status = EXIT_SUCCESS;
     double timeout = 10;
+    int ttyfd = -1;
+    char ttypath[PATH_MAX] = "/dev/tty";
 
     opterr = 0;
 
@@ -706,11 +684,20 @@ int main(int argc, char **argv)
 
     exit_status = EXIT_BAD_USAGE;
 
-    while ((opt = getopt(argc, argv, "+1fhr:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "+1F:fhr:t:")) != -1) {
         switch (opt) {
           case '1': action = ACTION_ONE_SHOT_QUERY;     break;
           case 'f': action = ACTION_FLOW_CONTROL_ONLY;  break;
           case 'h': action = ACTION_HUP_DETECTOR;       break;
+
+          case 'F':
+            if (strlen(optarg) <= (sizeof(ttypath) - 1)) {
+                strcpy(ttypath, optarg);
+                break;
+            }
+
+            errorf("%s: path is too long", optarg);
+            goto done;
 
           case 'r':
             if (parse_number(optarg, &deadline) && deadline >= 0.01) {
@@ -739,25 +726,27 @@ int main(int argc, char **argv)
         }
     }
 
+    if ((ttyfd = open(ttypath, O_RDWR | O_NOCTTY)) == -1) {
+        errnof("unable to open %s", ttypath);
+        goto done;
+    } else if (!isatty(ttyfd)) {
+        errorf("%s is not a terminal", ttypath);
+        goto done;
+    }
+
     command = (argc == optind ? NULL : argv + optind);
 
     if (action == ACTION_HUP_DETECTOR || action == ACTION_FLOW_CONTROL_ONLY) {
-        if (!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
-            errorf("input and output must be attached a TTY");
-        } else if (same_file(STDIN_FILENO, STDOUT_FILENO) != 1) {
-            errorf("input and output must be attached to the same TTY");
-        } else if (!command) {
-            errorf("no command specified");
-        } else if (set_hupmon_environment_variables(STDIN_FILENO)) {
+        if (set_hupmon_environment_variables(ttyfd)) {
             xerror("unable to set environment variables");
         } else {
             if (action == ACTION_FLOW_CONTROL_ONLY) {
                 timeout = -1;
             }
 
-            exit_status = wrap(STDIN_FILENO, command, timeout, deadline);
+            exit_status = wrap(ttyfd, command, timeout, deadline);
             errno_copy = errno;
-            tcflush(STDIN_FILENO, TCIOFLUSH);
+            tcflush(ttyfd, TCIOFLUSH);
 
             if (exit_status < 0) {
                 errno = errno_copy;
@@ -765,16 +754,15 @@ int main(int argc, char **argv)
             }
         }
     } else if (action == ACTION_ONE_SHOT_QUERY) {
-        if (!isatty(STDIN_FILENO)) {
-            errorf("input is not a TTY");
-        } else if (command) {
+        if (command) {
             errorf("unexpected non-option arguments");
         } else {
-            exit_status = print_tty_status(STDIN_FILENO, deadline);
+            exit_status = print_tty_status(ttyfd, deadline);
         }
     }
 
 done:
     fflush(NULL);
+    close(ttyfd);
     return (exit_status < 0 || exit_status > 255 ? EXIT_FAILURE : exit_status);
 }

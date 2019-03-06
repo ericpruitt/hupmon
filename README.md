@@ -54,6 +54,10 @@ One-shot mode; immediately query the terminal to determine if it is online and
 print the status to standard output. It is an error to specify a command when
 using this mode.
 
+#### -F _PATH_ ("/dev/tty") ####
+
+Path of the terminal character device.
+
 #### -f ####
 
 Enable flow-control-only mode. When this option is used, the terminal will

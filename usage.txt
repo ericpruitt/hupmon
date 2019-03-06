@@ -1,4 +1,4 @@
-Usage: hupmon [-1fh] [-r SECONDS] [-t SECONDS] [COMMAND [ARGUMENT]...]
+Usage: hupmon [-1fh] [-F TTY] [-r SECONDS] [-t SECONDS] [COMMAND [ARGUMENT]...]
        hupmon --help
 
 HUPMon is a tool created to detect terminal hangups on configurations where it
@@ -16,6 +16,8 @@ Options (and Defaults):
   -1    One-shot mode; immediately query the terminal to determine if it is
         online and print the status to standard output. It is an error to
         specify a command when using this mode.
+  -F PATH ("/dev/tty")
+        Path of the terminal character device.
   -f    Enable flow-control-only mode. When this option is used, the terminal
         will never be queried to check if it is online, and HUPMon just acts as
         proxy between hardware that depends on software flow control and
