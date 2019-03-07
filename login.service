@@ -1,0 +1,26 @@
+[Unit]
+Description=HUPMon-managed login on %I
+BindsTo=dev-%i.device
+After=dev-%i.device systemd-user-sessions.service plymouth-quit-wait.service
+After=rc-local.service
+
+# If additional gettys are spawned during boot then we should make
+# sure that this is synchronized before getty.target, even though
+# getty.target didn't actually pull it in.
+Before=getty.target
+IgnoreOnIsolate=yes
+
+[Service]
+ExecStart=/usr/local/bin/hupmon-login.sh %I
+Type=idle
+Restart=always
+UtmpIdentifier=%I
+TTYPath=/dev/%I
+TTYReset=yes
+TTYVHangup=yes
+KillMode=process
+IgnoreSIGPIPE=no
+SendSIGHUP=yes
+
+[Install]
+WantedBy=getty.target

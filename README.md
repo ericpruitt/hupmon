@@ -39,6 +39,19 @@ If Make is installed, running `make` will build an executable named "hupmon".
 The default CC and CFLAGS variables are defined for Clang/LLVM; adjust them
 accordingly or uncomment out the alternative definitions.
 
+Running `make install` will copy the hupmon binary and login.sh to `$(BIN)`
+which defaults to "/usr/local/bin". The login.sh script is installed as using a
+more specific name, "hupmon-login.sh". This script is designed to act as a
+replacement for _agetty(8)_. For more information about the script run
+`./login.sh --help`. An additional target named "configure-systemd" is also
+available which will setup systemd unit files that use HUPMon to manage serial
+terminals. The terminals that will have services installed is controlled by the
+"HUPMON_MANAGED_TTYS" Make variable which is a list of basename of terminals
+under "/dev/".
+
+The HUPMon command, login script and systemd units can be removed with `make
+uninstall`.
+
 Usage
 -----
 
