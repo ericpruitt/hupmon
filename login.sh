@@ -8,41 +8,37 @@ STTY_PARAMETERS="19200 sane -brkint ixoff -imaxbel"
 TERM="vt100"
 HUPMON_OPTIONS=""
 
+USAGE="$SELF [-qv] [-l LOGIN] [-o OPTIONS] [-s SETTINGS] [-t TERM] TTY
+       $SELF --help
+
+Use HUPMon to manage logins for a terminal. The TTY argument can be an absolute
+path or the basename of a terminal under \"/dev/\".
+
+Options (and Defaults):
+  --help
+        Show this documentation and exit.
+  -l LOGIN (\"$LOGIN\")
+        Command executed by HUPMon once the terminal is online.
+  -o OPTIONS
+        Options used when executing HUPMon.
+  -q    Run script quietly. This is the default behavior.
+  -s SETTINGS (\"$STTY_PARAMETERS\")
+        Arguments for stty(1) used to configure the terminal.
+  -t TERM (\"$TERM\")
+        Value used for the TERM environment variable.
+  -v    Run the script verbosely.
+"
+
 die()
 {
     test -z "$*" || printf "%s: %s\n" "$SELF" "$*" >&2
     exit 1
 }
 
-usage()
-{
-    printf "%s\n" \
-    "Usage: $SELF [-qv] [-l LOGIN] [-o OPTIONS] [-s SETTINGS] [-t TERM] TTY" \
-    "       $SELF --help" \
-    "" \
-    "Use HUPMon to manage logins for a terminal. The TTY argument can be" \
-    "an absolute path or the basename of a terminal under \"/dev/\"." \
-    "" \
-    "Options (and Defaults):" \
-    "  --help" \
-    "        Show this documentation and exit." \
-    "  -l LOGIN (\"$LOGIN\")" \
-    "        Command executed by HUPMon once the terminal is online." \
-    "  -o OPTIONS" \
-    "        Options used when executing HUPMon." \
-    "  -q    Run script quietly. This is the default behavior." \
-    "  -s SETTINGS (\"$STTY_PARAMETERS\")" \
-    "        Arguments for stty(1) used to configure the terminal." \
-    "  -t TERM (\"$TERM\")" \
-    "        Value used for the TERM environment variable." \
-    "  -v    Run the script verbosely." \
-    ;
-}
-
 main()
 {
     if [ "${1:-}" = "--help" ]; then
-        usage
+        printf "Usage: %s" "$USAGE"
         return
     fi
 
