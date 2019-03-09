@@ -500,7 +500,7 @@ static int wrap(int ttyfd, char **argv, double timeout, double cprtimeout)
             if (state == DEVICE_OFFLINE) {
                 timeout = -1;
                 polltimeoutms = -1;
-                kill(child, SIGHUP);
+                while (close(childfd) && errno == EINTR);
             } else {
                 polltimeoutms = (int) (1000 * timeout);
             }
