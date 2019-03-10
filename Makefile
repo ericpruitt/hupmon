@@ -18,7 +18,7 @@ all: hupmon
 $(BIN)/hupmon: hupmon
 	install hupmon $(BIN)
 
-$(BIN)/hupmon-login.sh: $(BIN)/hupmon
+$(BIN)/hupmon-login.sh: login.sh $(BIN)/hupmon
 	install login.sh $@
 
 install: $(BIN)/hupmon $(BIN)/hupmon-login.sh
