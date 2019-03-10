@@ -3,7 +3,7 @@ set -u
 SELF="${0##*/}"
 
 # Default option values:
-LOGIN="login"
+LOGIN="/bin/login -p"
 STTY_PARAMETERS="19200 sane -brkint ixoff -imaxbel"
 TERM="vt100"
 HUPMON_OPTIONS=""
@@ -85,7 +85,8 @@ main()
             # with ANSI sequences.
             stty -F "$tty" $STTY_PARAMETERS || status="$?"
             printf "\033[r\033[H\033[J" > "$tty" || status="$?"
-            TERM="$TERM" hupmon $HUPMON_OPTIONS -F "$tty" $LOGIN || status="$?"
+            env -i TERM="$TERM" "$(command -v hupmon || echo hupmon)" \
+                $HUPMON_OPTIONS -F "$tty" $LOGIN || status="$?"
         fi
 
         sleep 1
