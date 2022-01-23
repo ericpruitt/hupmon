@@ -72,7 +72,7 @@ main()
     stty -F "$tty" $STTY_PARAMETERS || status="$?"
 
     while :; do
-        if [ "$(hupmon $HUPMON_OPTIONS -F "$tty" -1)" = "DEVICE_ONLINE" ]; then
+        if [ "$(hupmon -F "$tty" -1)" = "DEVICE_ONLINE" ]; then
             # Configure the terminal attributes and clear the screen:
             #
             # 1. \033 [ r   Move the cursor to the home position.
