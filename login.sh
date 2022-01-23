@@ -1,5 +1,5 @@
 #!/bin/sh
-set -u
+set -f -u
 SELF="${0##*/}"
 
 # Default option values:
