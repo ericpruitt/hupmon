@@ -1,4 +1,5 @@
-Usage: hupmon [-1fh] [-F TTY] [-r SECONDS] [-t SECONDS] [COMMAND [ARGUMENT]...]
+Usage: hupmon [-fh] [-F TTY] [-r SECONDS] [-t SECONDS] COMMAND [ARGUMENT]...
+       hupmon -1 [-F TTY] [-r SECONDS]
        hupmon --help
 
 HUPMon is a tool created to detect terminal hangups on configurations where it
