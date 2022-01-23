@@ -67,9 +67,7 @@ main()
         esac
     fi
 
-    # The "status" variable is unused, but the assignments here and below
-    # ensure that failing return codes will be logged in verbose mode.
-    stty -F "$tty" $STTY_PARAMETERS || status="$?"
+    stty -F "$tty" $STTY_PARAMETERS
 
     while :; do
         if [ "$(hupmon -F "$tty" -1)" = "DEVICE_ONLINE" ]; then
