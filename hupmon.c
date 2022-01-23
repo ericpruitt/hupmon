@@ -737,6 +737,11 @@ int main(int argc, char **argv)
     command = (argc == optind ? NULL : argv + optind);
 
     if (action == ACTION_HUP_DETECTOR || action == ACTION_FLOW_CONTROL_ONLY) {
+        if (!command) {
+            errorf("no command specified to be wrapped");
+            return exit_status;
+        }
+
         if (set_hupmon_environment_variables(ttyfd)) {
             xerror("unable to set environment variables");
         } else {
